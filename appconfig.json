@@ -1,0 +1,4 @@
+{
+    "driver":             "mysql",
+    "connection_string":  "root@/code_test"
+}
