@@ -1,18 +1,15 @@
 package repository
 
-import
-(
+import (
+	"database/sql"
 	"github.com/aalempijevic/communityteaminterview/model"
 	_ "github.com/go-sql-driver/mysql"
-	"database/sql"
-	"log"
 )
 
 //SelectCommentByWord is a query to get the comments with text matching the search term
 //I wrapped the query to add a secondary ordering to make sure that we preserve order of rows
 //even if two rows have the same relevance because we are paginating results
-const selectCommentsByWord =
-	`
+const selectCommentsByWord = `
 		SELECT c.id, c.text
 		FROM comments c
 			INNER JOIN (
@@ -35,28 +32,27 @@ func NewCommentRepo(database *sql.DB) *CommentRepo {
 }
 
 //ExtractComments converts rows to comments
-func extractComments(rows *sql.Rows) model.Comments {
+func extractComments(rows *sql.Rows) (model.Comments, error) {
 
 	comments := model.Comments{}
 	for rows.Next() {
 		c := model.Comment{}
 		err := rows.Scan(&c.Id, &c.Text)
 		if err != nil {
-			log.Fatal(err)
+			return comments, err
 		}
 		comments = append(comments, c)
 	}
 
-	return comments
+	return comments, nil
 }
 
-
 //GetCommentsByWord returns all comments that have a match on the search word and paginates the results
-func (repo *CommentRepo) GetCommentsByWord(word string, skip int, limit int) model.Comments {
+func (repo *CommentRepo) GetCommentsByWord(word string, skip int, limit int) (model.Comments, error) {
 	rows, err := repo.db.Query(selectCommentsByWord, word, word, skip, limit)
 	defer rows.Close()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	return extractComments(rows)
 }

@@ -1,56 +1,86 @@
-package batch_test
+package batch
 
 import (
+	"github.com/aalempijevic/communityteaminterview/model"
+	"github.com/stretchr/testify/assert"
 	"testing"
-	//"github.com/stretchr/testify/assert"
-	"github.com/aalempijevic/communityteaminterview/batch"
-	"fmt"
-	"github.com/aalempijevic/communityteaminterview/config"
-	"log"
-	"database/sql"
-	"github.com/aalempijevic/communityteaminterview/repository"
 )
 
-var commentText = `Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-		sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-		Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-		aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-		velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat
-		non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.`
+var tokenizeWordsTests = []struct {
+	text          string
+	expectedWords []string
+}{
+	{"simple test", []string{"simple", "test"}},
+	{"punctuation is removed!?!", []string{"punctuation", "is", "removed"}},
+	{"Words are LOWER CASE", []string{"words", "are", "lower", "case"}},
+	{"Contractions don't interfere", []string{"contractions", "dont", "interfere"}},
+}
 
-//
-//func TestProcessComment(t *testing.T) {
-//	text := "comment comment poorly #@^ A. poorly; !punctuated !@#%comment"
-//	expected := batch.WordFrequencies{
-//		batch.WordFrequency{Word: "comment", Frequency:3},
-//		batch.WordFrequency{Word: "poorly", Frequency: 2},
-//		batch.WordFrequency{Word:"punctuated", Frequency: 1}}
-//	result := batch.GetWordFrequencies(text)
-//	assert.Equal(t, expected, result)
-//}
-//
-//func BenchmarkProcessComment( b *testing.B) {
-//	for n := 0; n < b.N; n++ {
-//		batch.GetWordFrequencies(commentText)
-//	}
-//}
-
-
-func TestTruncateAndProcessWords(t *testing.T) {
-	fmt.Println("load config")
-	config, err := config.LoadDatabaseConfig("../appconfig.json")
-	if err != nil {
-		log.Fatal(err)
+func TestTokenizeWords(t *testing.T) {
+	for _, test := range tokenizeWordsTests {
+		assert.Equal(t, test.expectedWords, tokenizeWords(test.text))
 	}
-	fmt.Println("Open conn")
-	database, err := sql.Open(config.DriverName, config.ConnectionString)
-	defer database.Close()
-	if err != nil {
-		log.Fatal(err)
+}
+
+var filterStopWordsTests = []struct {
+	inputWords    []string
+	expectedWords []string
+}{
+	{[]string{"simple", "test"}, []string{"simple", "test"}},
+	{[]string{"the", "we", "are", "i"}, []string{}},
+	{[]string{"some", "i", "the", "stop", "words"}, []string{"stop", "words"}},
+}
+
+func TestFilterStopWords(t *testing.T) {
+	for _, test := range filterStopWordsTests {
+		assert.Equal(t, test.expectedWords, filterStopWords(test.inputWords))
 	}
+}
 
-	fmt.Println("get sentences")
+var sentenceProcessingTests = []struct {
+	sentences                  model.Sentences
+	expectedWordSet            model.WordSet
+	expectedTagWordFrequencies model.TagWordFrequencies
+}{
+	{
+		model.Sentences{
+			model.Sentence{TagIds: []int{1, 3}, Text: "sentence sentence poorly #@^ A. poorly; !punctuated !@#%sentence"},
+			model.Sentence{TagIds: []int{1, 2}, Text: "Another sentence with Words"},
+		},
+		model.WordSet{
+			"sentence":   true,
+			"poorly":     true,
+			"punctuated": true,
+			"another":    true,
+			"words":      true,
+		},
+		model.TagWordFrequencies{
+			1: model.WordFrequencies{
+				"sentence":   4,
+				"poorly":     2,
+				"punctuated": 1,
+				"another":    1,
+				"words":      1,
+			},
+			2: model.WordFrequencies{
+				"sentence": 1,
+				"another":  1,
+				"words":    1,
+			},
+			3: model.WordFrequencies{
+				"sentence":   3,
+				"poorly":     2,
+				"punctuated": 1,
+			},
+		},
+	},
+}
 
-	repo := repository.NewWordRepo(database)
-	batch.TruncateAndProcessWords(*repo, .65, false)
+func TestProcessSentences(t *testing.T) {
+	for _, test := range sentenceProcessingTests {
+		wordSet, tagWordFrequencies := processSentences(test.sentences)
+
+		assert.Equal(t, test.expectedWordSet, wordSet)
+		assert.Equal(t, test.expectedTagWordFrequencies, tagWordFrequencies)
+	}
 }

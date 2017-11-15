@@ -1,11 +1,11 @@
 package main
 
 import (
-	"log"
-	"net/http"
 	"database/sql"
 	"github.com/aalempijevic/communityteaminterview/api"
 	"github.com/aalempijevic/communityteaminterview/config"
+	"log"
+	"net/http"
 )
 
 //Environment contains environment specific vars such as the database connection

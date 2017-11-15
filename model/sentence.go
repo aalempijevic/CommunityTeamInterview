@@ -1,7 +1,7 @@
 package model
 
 type Sentence struct {
-	Text string
+	Text   string
 	TagIds []int
 }
 

@@ -6,10 +6,10 @@ import (
 
 //Route represents an api route that can be handled by our Router.
 type Route struct {
-	Name        string
-	Method      string
-	Pattern     string
-	Queries		[]string
+	Name            string
+	Method          string
+	Pattern         string
+	Queries         []string
 	HandlerFunction http.HandlerFunc
 }
 
@@ -38,5 +38,12 @@ var routes = Routes{
 		"/commentsByWord",
 		[]string{"word", "{word}", "skip", "{skip:[0-9]+}", "limit", "{limit:[0-9]+}"},
 		CommentsByWord,
+	},
+	Route{
+		"ProcessWords",
+		"GET",
+		"/processWords",
+		[]string{"threshold", "{threshold:[0-9]+[\\.][0-9]+}"},
+		ProcessWords,
 	},
 }

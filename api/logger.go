@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-//Create a Logger decorator for a Http Handler Function to log out the requests
-func Logger(inner http.Handler, name string) http.Handler {
+//Create a HttpLogger decorator for a Http Handler Function to log out the requests
+func HttpLogger(inner http.Handler, name string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 

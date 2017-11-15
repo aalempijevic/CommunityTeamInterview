@@ -1,71 +1,35 @@
 package repository_test
 
 import (
-	"testing"
-
-	"github.com/aalempijevic/communityteaminterview/config"
-	"log"
-	"database/sql"
 	"github.com/aalempijevic/communityteaminterview/repository"
-	"fmt"
+	"github.com/stretchr/testify/assert"
+	"gopkg.in/DATA-DOG/go-sqlmock.v1"
+	"testing"
 )
-//
-//func TestWordRepo_StoreWords(t *testing.T) {
-//	fmt.Println("load config")
-//	config, err := config.LoadDatabaseConfig("../appconfig.json")
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	fmt.Println("Open conn")
-//	database, err := sql.Open(config.DriverName, config.ConnectionString)
-//	defer database.Close()
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//
-//	fmt.Println("write words")
-//	words := []string {"kazoo", "banana"}
-//	repository.NewWordRepo(database).StoreWords(words)
-//}
-
-
-func TestWordRepo_GetSentenceTags(t *testing.T) {
-	fmt.Println("load config")
-	config, err := config.LoadDatabaseConfig("../appconfig.json")
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("Open conn")
-	database, err := sql.Open(config.DriverName, config.ConnectionString)
-	defer database.Close()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println("get sentences")
-
-	repo := repository.NewWordRepo(database)
-	sentences := repo.GetSentenceTags(.7)
-	fmt.Println(len(sentences))
-}
 
 func TestWordRepo_GetWordsByTag(t *testing.T) {
-	fmt.Println("load config")
-	config, err := config.LoadDatabaseConfig("../appconfig.json")
+	db, mock, err := sqlmock.New()
 	if err != nil {
-		log.Fatal(err)
+		t.Fatalf("Unexpected error when opening a stub database connection: %s", err)
 	}
-	fmt.Println("Open conn")
-	database, err := sql.Open(config.DriverName, config.ConnectionString)
-	defer database.Close()
+	defer db.Close()
+
+	tagId := 5
+	rows := sqlmock.NewRows([]string{"word"}).
+		AddRow("some").
+		AddRow("words")
+
+	mock.ExpectQuery("select w.word from words").WithArgs(tagId).WillReturnRows(rows)
+
+	words, err := repository.NewWordRepo(db).GetWordsByTag(tagId)
 	if err != nil {
-		log.Fatal(err)
+		t.Errorf("Unexpected error while executing GetWordsByTag: %s", err)
 	}
 
-	fmt.Println("get words")
-	repo := repository.NewWordRepo(database)
-	words := repo.GetWordsByTag(2)
-	fmt.Println(words)
+	// Make sure that all expectations were met
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("Unfulfilled expectations: %s", err)
+	}
 
+	assert.Equal(t, []string{"some", "words"}, words)
 }
-
