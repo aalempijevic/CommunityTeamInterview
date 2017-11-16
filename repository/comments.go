@@ -50,9 +50,9 @@ func extractComments(rows *sql.Rows) (model.Comments, error) {
 //GetCommentsByWord returns all comments that have a match on the search word and paginates the results
 func (repo *CommentRepo) GetCommentsByWord(word string, skip int, limit int) (model.Comments, error) {
 	rows, err := repo.db.Query(selectCommentsByWord, word, word, skip, limit)
-	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	return extractComments(rows)
 }

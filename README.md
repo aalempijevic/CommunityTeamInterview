@@ -1,2 +1,2 @@
 # CommunityTeamInterview
-Interview project for NYT Community Team
+Interview project for Community Team

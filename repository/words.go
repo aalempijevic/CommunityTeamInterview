@@ -24,10 +24,11 @@ func NewWordRepo(database *sql.DB) *WordRepo {
 
 func (repo *WordRepo) StoreWords(words map[string]bool) error {
 	stmt, err := repo.db.Prepare("INSERT IGNORE INTO `words` (`word`) VALUES (?)")
-	defer stmt.Close()
 	if err != nil {
 		return err
 	}
+	defer stmt.Close()
+
 	for word := range words {
 		_, err = stmt.Exec(word)
 		if err != nil {
@@ -42,10 +43,10 @@ func (repo *WordRepo) StoreWordFrequencies(tagWordFrequencies map[int]model.Word
 	stmt, err := repo.db.Prepare(
 		"INSERT IGNORE INTO `tag_word_frequencies` (`wordId`,`tagId`,`frequency`) " +
 			"SELECT `id`, ?, ? from `words` WHERE word = ?")
-	defer stmt.Close()
 	if err != nil {
 		return err
 	}
+	defer stmt.Close()
 	for tagId, wordFrequencies := range tagWordFrequencies {
 		for word, frequency := range wordFrequencies {
 			_, err = stmt.Exec(tagId, frequency, word)
@@ -60,10 +61,10 @@ func (repo *WordRepo) StoreWordFrequencies(tagWordFrequencies map[int]model.Word
 
 func (repo *WordRepo) GetWordsByTag(tagId int) ([]string, error) {
 	rows, err := repo.db.Query(selectWordsByTag, tagId)
-	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	words := make([]string, 0)
 	for rows.Next() {

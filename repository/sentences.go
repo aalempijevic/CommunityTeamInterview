@@ -40,10 +40,10 @@ const selectSentences string = `
 // the tag ids for that sentence that exceed the threshold
 func (repo *WordRepo) GetSentenceTags(threshold float64) (model.Sentences, error) {
 	rows, err := repo.db.Query(selectSentences, threshold)
-	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	return extractSentences(rows)
 }
 
