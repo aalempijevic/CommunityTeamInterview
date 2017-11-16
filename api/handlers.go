@@ -4,14 +4,12 @@ import (
 
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"github.com/aalempijevic/communityteaminterview/repository"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"strconv"
 	"github.com/aalempijevic/communityteaminterview/batch"
-
 	"github.com/tevino/abool"
 )
 
@@ -27,11 +25,6 @@ func Init(db *sql.DB) {
 	database = db
 	batchRunning = abool.New()
 }
-
-func Index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Welcome!")
-}
-
 
 //WordsByTag gives a response containing words appearing with the specified tag sorted by highest frequency
 func WordsByTag(w http.ResponseWriter, r *http.Request) {

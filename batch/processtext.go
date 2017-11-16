@@ -39,6 +39,7 @@ func TruncateAndProcessWords(wordRepo repository.WordRepo, threshold float64) {
 	if err := wordRepo.StoreWordFrequencies(tagWordFrequencies); err != nil {
 		log.Fatal(err)
 	}
+	log.Println("Completed")
 }
 
 //ProcessSentences tokenizes sentences and counts their words to each tag they have applied

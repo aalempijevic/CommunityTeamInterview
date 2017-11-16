@@ -1,6 +1,6 @@
 package batch
 
-//StopWords is a hard-coded map being used as a set of the 100 most common tokenizeWords
+//StopWords is a hard-coded map being used as a set of the 100 most common words
 // based on https://gist.github.com/gravitymonkey/2406023
 var stopWords = map[string]bool{
 	"the":    true,

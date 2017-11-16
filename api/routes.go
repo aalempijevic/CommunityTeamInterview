@@ -19,13 +19,6 @@ type Routes []Route
 //Config for all of our api routes
 var routes = Routes{
 	Route{
-		"Index",
-		"GET",
-		"/",
-		nil,
-		Index,
-	},
-	Route{
 		"WordsByTag",
 		"GET",
 		"/wordsByTag",
