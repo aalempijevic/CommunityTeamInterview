@@ -2,7 +2,7 @@ package api
 
 import "github.com/gorilla/mux"
 
-//NewRouter creates a Router decorated with a HttpLogger which handles routes
+//NewRouter creates a Router with handlers (decorated with a HttpLogger) for routes
 // configured in routes
 func NewRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)

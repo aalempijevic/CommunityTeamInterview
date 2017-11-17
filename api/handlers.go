@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"github.com/aalempijevic/communityteaminterview/repository"
 	"github.com/gorilla/mux"
-	"log"
 	"net/http"
 	"strconv"
 	"github.com/aalempijevic/communityteaminterview/batch"
@@ -33,19 +32,27 @@ func WordsByTag(w http.ResponseWriter, r *http.Request) {
 
 	tagId, err := strconv.Atoi(vars["tag"])
 	if err != nil {
-		log.Fatalf("Was not able to convert tag parameter to an int: %s", err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Was not able to convert tag parameter to an int"))
+		return
 	}
 
 	words, err := repository.NewWordRepo(database).GetWordsByTag(tagId)
+
 	if err != nil {
-		log.Fatalf("Error while trying to get wordsByTag from repo: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Error while trying to get wordsByTag from repos"))
+		return
 	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 
 	err = json.NewEncoder(w).Encode(words)
 	if err != nil {
-		log.Fatalf("Unable to encode words as JSON object: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Error while trying to encode words"))
+		return
 	}
 }
 
@@ -59,14 +66,18 @@ func CommentsByWord(w http.ResponseWriter, r *http.Request) {
 
 	comments, err := repository.NewCommentRepo(database).GetCommentsByWord(word, skip, limit)
 	if err != nil {
-		log.Fatalf("Unable to retrieve comments: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Error while trying to get comments from repo"))
+		return
 	}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 
 	err = json.NewEncoder(w).Encode(comments)
 	if err != nil {
-		log.Fatal(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Error while trying to encode comments"))
+		return
 	}
 }
 
@@ -84,18 +95,17 @@ func ProcessWords(w http.ResponseWriter, r *http.Request) {
 		thresholdStr := vars["threshold"]
 		threshold, err := strconv.ParseFloat(thresholdStr, 64)
 		if err != nil {
-			log.Fatalf("Exception parsing float from threshold parameter: %s", vars["threshold"])
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("Exception parsing float from threshold parameter"))
+			return
 		}
 		go func() {
 			batchRunning.Set()
 			batch.TruncateAndProcessWords(*repository.NewWordRepo(database), threshold)
 			batchRunning.UnSet()
 		}()
-		if err != nil {
-			log.Fatalf("Unable to retrieve comments: %s", err)
-		}
 
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusAccepted)
 		w.Write([]byte("Processing request"))
 	}
 }

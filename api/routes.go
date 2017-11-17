@@ -36,7 +36,7 @@ var routes = Routes{
 		"ProcessWords",
 		"GET",
 		"/processWords",
-		[]string{"threshold", "{threshold:[0-9]+[\\.][0-9]+}"},
+		[]string{"threshold", "{threshold:[0-9]*[\\.][0-9]+}"},
 		ProcessWords,
 	},
 }
